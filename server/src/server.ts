@@ -8,7 +8,7 @@
 
 import * as path from 'path';
 
-import {Hover, Location, Range, IPCMessageReader, IPCMessageWriter, createConnection, IConnection, TextDocumentSyncKind, TextDocuments, TextDocument, Diagnostic, DiagnosticSeverity, InitializeParams, InitializeResult, TextDocumentPositionParams, CompletionItem, CompletionItemKind} from 'vscode-languageserver';
+import {CompletionList, Hover, Location, Range, IPCMessageReader, IPCMessageWriter, createConnection, IConnection, TextDocumentSyncKind, TextDocuments, TextDocument, Diagnostic, DiagnosticSeverity, InitializeParams, InitializeResult, TextDocumentPositionParams, CompletionItem, CompletionItemKind} from 'vscode-languageserver';
 import * as vscode from 'vscode-languageserver';
 import {Analyzer} from 'polymer-analyzer';
 import {FSUrlLoader} from 'polymer-analyzer/lib/url-loader/fs-url-loader';
@@ -107,27 +107,41 @@ connection.onDidChangeWatchedFiles((change) => {
 
 
 // This handler provides the initial list of the completion items.
-connection.onCompletion(
-    (textDocumentPosition: TextDocumentPositionParams): CompletionItem[] => {
-        // The pass parameter contains the position of the text document in
-        // which code complete got requested. For the example we ignore this
-        // info and always provide the same completion items.
-        return [
-          {label: 'TypeScript', kind: CompletionItemKind.Text, data: 1},
-          {label: 'JavaScript', kind: CompletionItemKind.Text, data: 2}
-        ]});
-
-// This handler resolve additional information for the item selected in
-// the completion list.
-connection.onCompletionResolve((item: CompletionItem): CompletionItem => {
-  if (item.data === 1) {
-    item.detail = 'TypeScript details',
-    item.documentation = 'TypeScript documentation'
-  } else if (item.data === 2) {
-    item.detail = 'JavaScript details',
-    item.documentation = 'JavaScript documentation'
+connection.onCompletion(async function(
+    textPosition:
+        TextDocumentPositionParams): Promise<CompletionList|undefined> {
+  // The pass parameter contains the position of the text document in
+  // which code complete got requested. For the example we ignore this
+  // info and always provide the same completion items.
+  const localPath = getWorkspacePathToFile(textPosition.textDocument);
+  if (localPath && editorService) {
+    const completions = await editorService.getTypeaheadCompletionsFor(
+        localPath, convertPosition(textPosition.position));
+    if (!completions) {
+      return;
+    }
+    if (completions.kind === 'element-tags') {
+      return {
+        isIncomplete: false,
+        items: completions.elements.map(c => ({
+                                          label: c.tagname,
+                                          kind: CompletionItemKind.Class,
+                                          documentation: c.description
+                                        })),
+      };
+    } else if (completions.kind === 'attributes') {
+      return {
+        isIncomplete: false,
+        items: completions.attributes.map(a => ({
+                                            label: a.name,
+                                            kind: CompletionItemKind.Field,
+                                            documentation: a.description,
+                                            detail: a.type
+                                          })),
+      };
+    }
   }
-  return item;
+  return;
 });
 
 function scanDocument(document: TextDocument) {
