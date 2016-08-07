@@ -1,0 +1,18 @@
+<behavior-test-elem local-property></behavior-test-elem>
+<link rel="import" href="./behavior.html">
+
+<script>
+  /** An element to test out behavior inheritance. */
+  Polymer({
+    is: 'behavior-test-elem',
+    behaviors: [MyNamespace.SimpleBehavior],
+    properties: {
+      /** A property defined directly on behavior-test-elem. */
+      localProperty: {
+        type: Boolean,
+        value: true,
+        notify: true
+      }
+    }
+  });
+</script>

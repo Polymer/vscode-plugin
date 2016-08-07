@@ -6,7 +6,14 @@
  */
 'use strict';
 
-import {IPCMessageReader, IPCMessageWriter, createConnection, IConnection, TextDocumentSyncKind, TextDocuments, TextDocument, Diagnostic, DiagnosticSeverity, InitializeParams, InitializeResult, TextDocumentPositionParams, CompletionItem, CompletionItemKind} from 'vscode-languageserver';
+import * as path from 'path';
+
+import {Hover, Range, IPCMessageReader, IPCMessageWriter, createConnection, IConnection, TextDocumentSyncKind, TextDocuments, TextDocument, Diagnostic, DiagnosticSeverity, InitializeParams, InitializeResult, TextDocumentPositionParams, CompletionItem, CompletionItemKind} from 'vscode-languageserver';
+import {Analyzer} from 'polymer-analyzer';
+import {FSUrlLoader} from 'polymer-analyzer/lib/url-loader/fs-url-loader';
+import {EditorService} from 'polymer-analyzer/lib/editor-service';
+
+let editorService: EditorService|null = null;
 
 // Create a connection for the server. The connection uses Node's IPC as a
 // transport
@@ -27,12 +34,23 @@ documents.listen(connection);
 let workspaceRoot: string;
 connection.onInitialize((params): InitializeResult => {
   workspaceRoot = params.rootPath;
+  connection.console.log(`workspaceRoot: ${workspaceRoot}`);
+  let ed = new EditorService(
+      new Analyzer({urlLoader: new FSUrlLoader(workspaceRoot)}));
+  for (const document of documents.all()) {
+    const localPath = getWorkspacePathToFile(document);
+    if (localPath) {
+      ed.fileChanged(localPath, document.getText() || undefined);
+    }
+  }
+  editorService = ed;
   return <InitializeResult> {
     capabilities: {
       // Tell the client that the server works in FULL text document sync mode
       textDocumentSync: documents.syncKind,
       // Tell the client that the server support code complete
       completionProvider: {resolveProvider: true},
+      hoverProvider: true
     }
   }
 });
@@ -41,7 +59,46 @@ connection.onInitialize((params): InitializeResult => {
 // when the text document first opened or when its content has changed.
 documents.onDidChangeContent((change) => {
   validateTextDocument(change.document);
+  const localPath = getWorkspacePathToFile(change.document);
+  if (editorService && localPath) {
+    editorService.fileChanged(localPath, change.document.getText());
+  }
 });
+
+function getWorkspacePathToFile(doc: {uri: string}): string|undefined {
+  const match = doc.uri.match(/^file:\/\/(.*)/);
+  if (!match || !match[1] || !workspaceRoot) {
+    return undefined;
+  }
+  return path.relative(workspaceRoot, match[1]);
+}
+
+connection.onHover(async(textPosition) => {
+  const localPath = getWorkspacePathToFile(textPosition.textDocument);
+  if (localPath && editorService) {
+    const position = {
+      line: textPosition.position.line,
+      column: textPosition.position.character
+    };
+    connection.console.log(`localPath: ${localPath}`);
+    connection.console.log(`position: ${JSON.stringify(position)}`);
+    const description = await editorService.getHoverInfo(localPath, position);
+    connection.console.log(`description: ${JSON.stringify(description)}`);
+    if (description) {
+      return {contents: description};
+    }
+  }
+});
+
+connection.onDefinition((async(textPosition) => {
+  const localPath = getWorkspacePathToFile(textPosition.textDocument);
+  if (localPath && editorService) {
+    const position = {
+      line: textPosition.position.line,
+      column: textPosition.position.character
+    };
+  }
+}));
 
 // The settings interface describe the server relevant settings part
 interface Settings {

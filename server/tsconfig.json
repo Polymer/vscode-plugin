@@ -5,7 +5,8 @@
 		"moduleResolution": "node",
 		"sourceMap": true,
 		"outDir": "../client/server",
-		"strictNullChecks": true
+		"strictNullChecks": true,
+		"noImplicitAny": true
 	},
 	"files": [
 		"src/server.ts",
