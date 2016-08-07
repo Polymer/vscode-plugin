@@ -27,20 +27,21 @@ documents.listen(connection);
 let workspaceRoot: string;
 connection.onInitialize((params): InitializeResult => {
   workspaceRoot = params.rootPath;
-  return {
+  return <InitializeResult> {
     capabilities: {
       // Tell the client that the server works in FULL text document sync mode
       textDocumentSync: documents.syncKind,
       // Tell the client that the server support code complete
-      completionProvider: {resolveProvider: true}
+      completionProvider: {resolveProvider: true},
     }
   }
 });
 
 // The content of a text document has changed. This event is emitted
 // when the text document first opened or when its content has changed.
-documents.onDidChangeContent(
-    (change) => { validateTextDocument(change.document); });
+documents.onDidChangeContent((change) => {
+  validateTextDocument(change.document);
+});
 
 // The settings interface describe the server relevant settings part
 interface Settings {
@@ -66,8 +67,7 @@ connection.onDidChangeConfiguration((change) => {
 });
 
 function validateTextDocument(textDocument: TextDocument): void {
-
-	let diagnostics: Diagnostic[] = [];
+  let diagnostics: Diagnostic[] = [];
   let lines = textDocument.getText().split(/\r?\n/g);
   let problems = 0;
   for (var i = 0; i < lines.length && problems < maxNumberOfProblems; i++) {
