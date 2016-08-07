@@ -1,12 +1,14 @@
 {
 	"compilerOptions": {
-		"target": "ES5",
+		"target": "ES6",
 		"module": "commonjs",
 		"moduleResolution": "node",
 		"sourceMap": true,
-		"outDir": "../client/server"
+		"outDir": "../client/server",
+		"strictNullChecks": true
 	},
-	"exclude": [
-		"node_modules"
+	"files": [
+		"src/server.ts",
+		"typings/promise.d.ts"
 	]
 }
