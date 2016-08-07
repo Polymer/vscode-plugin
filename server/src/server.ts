@@ -8,17 +8,32 @@
 
 import * as path from 'path';
 
-import {Hover, Range, IPCMessageReader, IPCMessageWriter, createConnection, IConnection, TextDocumentSyncKind, TextDocuments, TextDocument, Diagnostic, DiagnosticSeverity, InitializeParams, InitializeResult, TextDocumentPositionParams, CompletionItem, CompletionItemKind} from 'vscode-languageserver';
+import {Hover, Location, Range, IPCMessageReader, IPCMessageWriter, createConnection, IConnection, TextDocumentSyncKind, TextDocuments, TextDocument, Diagnostic, DiagnosticSeverity, InitializeParams, InitializeResult, TextDocumentPositionParams, CompletionItem, CompletionItemKind} from 'vscode-languageserver';
+import * as vscode from 'vscode-languageserver';
 import {Analyzer} from 'polymer-analyzer';
 import {FSUrlLoader} from 'polymer-analyzer/lib/url-loader/fs-url-loader';
-import {EditorService} from 'polymer-analyzer/lib/editor-service';
+import {EditorService, Position} from 'polymer-analyzer/lib/editor-service';
 
-let editorService: EditorService|null = null;
+// The settings interface describe the server relevant settings part
+interface Settings {
+  languageServerExample: OurSettings;
+}
+
+// The settings we defined in the client's package.json file.
+interface OurSettings {}
 
 // Create a connection for the server. The connection uses Node's IPC as a
 // transport
 let connection: IConnection = createConnection(
     new IPCMessageReader(process), new IPCMessageWriter(process));
+
+// The settings have changed. Is send on server activation
+// as well.
+connection.onDidChangeConfiguration((change) => {
+  let settings = <Settings>change.settings;
+});
+
+let editorService: EditorService|null = null;
 
 // Create a simple text document manager. The text document manager
 // supports full document sync only
@@ -35,57 +50,34 @@ let workspaceRoot: string;
 connection.onInitialize((params): InitializeResult => {
   workspaceRoot = params.rootPath;
   connection.console.log(`workspaceRoot: ${workspaceRoot}`);
-  let ed = new EditorService(
+  editorService = new EditorService(
       new Analyzer({urlLoader: new FSUrlLoader(workspaceRoot)}));
-  for (const document of documents.all()) {
-    const localPath = getWorkspacePathToFile(document);
-    if (localPath) {
-      ed.fileChanged(localPath, document.getText() || undefined);
-    }
-  }
-  editorService = ed;
+  documents.all().forEach(scanDocument);
   return <InitializeResult> {
     capabilities: {
       // Tell the client that the server works in FULL text document sync mode
       textDocumentSync: documents.syncKind,
       // Tell the client that the server support code complete
       completionProvider: {resolveProvider: true},
-      hoverProvider: true
+      hoverProvider: true,
+      definitionProvider: true,
     }
   }
 });
 
 // The content of a text document has changed. This event is emitted
-// when the text document first opened or when its content has changed.
+// when the text document is first opened or when its content has changed.
 documents.onDidChangeContent((change) => {
-  validateTextDocument(change.document);
-  const localPath = getWorkspacePathToFile(change.document);
-  if (editorService && localPath) {
-    editorService.fileChanged(localPath, change.document.getText());
-  }
+  scanDocument(change.document);
 });
-
-function getWorkspacePathToFile(doc: {uri: string}): string|undefined {
-  const match = doc.uri.match(/^file:\/\/(.*)/);
-  if (!match || !match[1] || !workspaceRoot) {
-    return undefined;
-  }
-  return path.relative(workspaceRoot, match[1]);
-}
 
 connection.onHover(async(textPosition) => {
   const localPath = getWorkspacePathToFile(textPosition.textDocument);
   if (localPath && editorService) {
-    const position = {
-      line: textPosition.position.line,
-      column: textPosition.position.character
-    };
-    connection.console.log(`localPath: ${localPath}`);
-    connection.console.log(`position: ${JSON.stringify(position)}`);
-    const description = await editorService.getHoverInfo(localPath, position);
-    connection.console.log(`description: ${JSON.stringify(description)}`);
-    if (description) {
-      return {contents: description};
+    const documentation = await editorService.getDocumentationFor(
+        localPath, convertPosition(textPosition.position));
+    if (documentation) {
+      return {contents: documentation};
     }
   }
 });
@@ -93,61 +85,20 @@ connection.onHover(async(textPosition) => {
 connection.onDefinition((async(textPosition) => {
   const localPath = getWorkspacePathToFile(textPosition.textDocument);
   if (localPath && editorService) {
-    const position = {
-      line: textPosition.position.line,
-      column: textPosition.position.character
-    };
-  }
-}));
-
-// The settings interface describe the server relevant settings part
-interface Settings {
-  languageServerExample: ExampleSettings;
-}
-
-// These are the example settings we defined in the client's package.json
-// file
-interface ExampleSettings {
-  maxNumberOfProblems: number;
-}
-
-// hold the maxNumberOfProblems setting
-let maxNumberOfProblems: number;
-// The settings have changed. Is send on server activation
-// as well.
-connection.onDidChangeConfiguration((change) => {
-  let settings = <Settings>change.settings;
-  maxNumberOfProblems =
-      settings.languageServerExample.maxNumberOfProblems || 100;
-  // Revalidate any open text documents
-  documents.all().forEach(validateTextDocument);
-});
-
-function validateTextDocument(textDocument: TextDocument): void {
-  let diagnostics: Diagnostic[] = [];
-  let lines = textDocument.getText().split(/\r?\n/g);
-  let problems = 0;
-  for (var i = 0; i < lines.length && problems < maxNumberOfProblems; i++) {
-    let line = lines[i];
-    const misspelling = 'kewrp';
-    let index = line.indexOf(misspelling);
-    if (index >= 0) {
-      problems++;
-      diagnostics.push({
-        severity: DiagnosticSeverity.Warning,
+    const location = await editorService.getDefinitionFor(
+        localPath, convertPosition(textPosition.position));
+    if (location && location.file) {
+      let definition: Location = {
+        uri: getUriForLocalPath(location.file),
         range: {
-          start: {line: i, character: index},
-          end: {line: i, character: index + misspelling.length}
-        },
-        message:
-            `${line.substr(index, misspelling.length)} should be spelled TypeScript`,
-        source: 'ex'
-      });
+          start: {line: location.line, character: location.column},
+          end: {line: location.line, character: location.column}
+        }
+      };
+      return definition;
     }
   }
-  // Send the computed diagnostics to VSCode.
-  connection.sendDiagnostics({uri: textDocument.uri, diagnostics});
-}
+}));
 
 connection.onDidChangeWatchedFiles((change) => {
   // Monitored files have change in VSCode
@@ -179,6 +130,31 @@ connection.onCompletionResolve((item: CompletionItem): CompletionItem => {
   return item;
 });
 
+function scanDocument(document: TextDocument) {
+  if (editorService) {
+    const localPath = getWorkspacePathToFile(document);
+    if (localPath) {
+      editorService.fileChanged(localPath, document.getText());
+    }
+  }
+}
+
+function getWorkspacePathToFile(doc: {uri: string}): string|undefined {
+  const match = doc.uri.match(/^file:\/\/(.*)/);
+  if (!match || !match[1] || !workspaceRoot) {
+    return undefined;
+  }
+  return path.relative(workspaceRoot, match[1]);
+}
+
+function getUriForLocalPath(localPath: string): string {
+  return `file://${workspaceRoot}/${localPath}`;
+}
+
+function convertPosition(position: vscode.Position): Position {
+  return {line: position.line, column: position.character};
+}
+
 /*
 connection.onDidOpenTextDocument((params) => {
         // A text document got opened in VSCode.
@@ -196,11 +172,6 @@ connection.onDidChangeTextDocument((params) => {
 ${JSON.stringify(params.contentChanges)}`);
 });
 
-connection.onDidCloseTextDocument((params) => {
-        // A text document got closed in VSCode.
-        // params.uri uniquely identifies the document.
-        connection.console.log(`${params.uri} closed.`);
-});
 */
 
 // Listen on the connection
