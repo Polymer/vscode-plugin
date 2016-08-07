@@ -53,7 +53,7 @@ connection.onInitialize((params): InitializeResult => {
   editorService = new EditorService(
       new Analyzer({urlLoader: new FSUrlLoader(workspaceRoot)}));
   documents.all().forEach(scanDocument);
-  return <InitializeResult> {
+  return <InitializeResult>{
     capabilities: {
       // Tell the client that the server works in FULL text document sync mode
       textDocumentSync: documents.syncKind,
@@ -62,7 +62,7 @@ connection.onInitialize((params): InitializeResult => {
       hoverProvider: true,
       definitionProvider: true,
     }
-  }
+  };
 });
 
 // The content of a text document has changed. This event is emitted
