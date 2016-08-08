@@ -123,20 +123,21 @@ connection.onCompletion(async function(
     if (completions.kind === 'element-tags') {
       return {
         isIncomplete: false,
-        items: completions.elements.map(c => ({
+        items: completions.elements.map(c => (<CompletionItem>{
                                           label: c.tagname,
                                           kind: CompletionItemKind.Class,
-                                          documentation: c.description
+                                          documentation: c.description,
                                         })),
       };
     } else if (completions.kind === 'attributes') {
       return {
         isIncomplete: false,
-        items: completions.attributes.map(a => ({
+        items: completions.attributes.map(a => (<CompletionItem>{
                                             label: a.name,
                                             kind: CompletionItemKind.Field,
                                             documentation: a.description,
-                                            detail: a.type
+                                            detail: a.type,
+                                            sortText: a.sortKey
                                           })),
       };
     }
