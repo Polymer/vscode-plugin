@@ -58,7 +58,7 @@ connection.onInitialize((params): InitializeResult => {
       // Tell the client that the server works in FULL text document sync mode
       textDocumentSync: documents.syncKind,
       // Tell the client that the server support code complete
-      completionProvider: {resolveProvider: true},
+      completionProvider: {resolveProvider: false},
       hoverProvider: true,
       definitionProvider: true,
     }
@@ -123,11 +123,15 @@ connection.onCompletion(async function(
     if (completions.kind === 'element-tags') {
       return {
         isIncomplete: false,
-        items: completions.elements.map(c => (<CompletionItem>{
-                                          label: c.tagname,
-                                          kind: CompletionItemKind.Class,
-                                          documentation: c.description,
-                                        })),
+        items: completions.elements.map(c => {
+          connection.console.log(`expandTo: ${c.expandTo}`);
+          return <CompletionItem>{
+            label: c.tagname,
+            kind: CompletionItemKind.Class,
+            documentation: c.description,
+            insertText: c.expandTo
+          };
+        }),
       };
     } else if (completions.kind === 'attributes') {
       return {

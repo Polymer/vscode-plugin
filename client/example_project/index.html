@@ -1,10 +1,26 @@
-<link rel="import" href="./element.html">
+<script>
+  /** hello */
+  Polymer({
+    is: 'my-element',
+    properties: {
+      /** this is a foo */
+      foo: {
+        type: String
+      }
+    }
+  })
+</script>
+<script>
+  /** hello world */
+  class VanillElem extends HTMLElement {
+    static get observedAttributes() {
+      return [
+        /** this is foo @type {boolean} */'foo', 'bar', 'baz']
+    }
+  }
+  window.customElements.define('vanilla-elem', VanillaElem);
+</script>
 <link rel="import" href="./bower_components/paper-button/paper-button.html">
-<body>
-  <div>
-    <behavior-test-elem local-property inherit-please></behavior-test-elem>
-    <paper-button raised>Click the button!</paper-button>
-    <script src="vanilla.js"></script>
-    <vanilla-elem></vanilla-elem>
-  </div>
-</body>
+<my-element foo></my-element>
+<paper-button raised></paper-button>
+<vanilla-elem foo></vanilla-elem>
