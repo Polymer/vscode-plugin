@@ -107,47 +107,58 @@ connection.onDidChangeWatchedFiles((change) => {
 
 
 // This handler provides the initial list of the completion items.
-connection.onCompletion(async function(
-    textPosition:
-        TextDocumentPositionParams): Promise<CompletionList|undefined> {
-  // The pass parameter contains the position of the text document in
-  // which code complete got requested. For the example we ignore this
-  // info and always provide the same completion items.
-  const localPath = getWorkspacePathToFile(textPosition.textDocument);
-  if (localPath && editorService) {
-    const completions = await editorService.getTypeaheadCompletionsFor(
-        localPath, convertPosition(textPosition.position));
-    if (!completions) {
-      return;
-    }
-    if (completions.kind === 'element-tags') {
-      return {
-        isIncomplete: false,
-        items: completions.elements.map(c => {
-          connection.console.log(`expandTo: ${c.expandTo}`);
-          return <CompletionItem>{
-            label: c.tagname,
-            kind: CompletionItemKind.Class,
-            documentation: c.description,
-            insertText: c.expandTo
-          };
-        }),
-      };
-    } else if (completions.kind === 'attributes') {
-      return {
-        isIncomplete: false,
-        items: completions.attributes.map(a => (<CompletionItem>{
-                                            label: a.name,
-                                            kind: CompletionItemKind.Field,
-                                            documentation: a.description,
-                                            detail: a.type,
-                                            sortText: a.sortKey
-                                          })),
-      };
-    }
-  }
-  return;
-});
+connection.onCompletion(
+    async function(textPosition: TextDocumentPositionParams):
+        Promise<CompletionList|undefined> {
+          // The pass parameter contains the position of the text document in
+          // which code complete got requested. For the example we ignore this
+          // info and always provide the same completion items.
+          const localPath = getWorkspacePathToFile(textPosition.textDocument);
+          if (localPath && editorService) {
+            const completions = await editorService.getTypeaheadCompletionsFor(
+                localPath, convertPosition(textPosition.position));
+            if (!completions) {
+              return;
+            }
+            if (completions.kind === 'element-tags') {
+              return {
+                isIncomplete: false,
+                items: completions.elements.map(c => {
+                  return <CompletionItem>{
+                    label: `<${c.tagname}>`,
+                    kind: CompletionItemKind.Class,
+                    documentation: c.description,
+                    insertText: c.expandTo
+                  };
+                }),
+              };
+            } else if (completions.kind === 'attributes') {
+              return {
+                isIncomplete: false,
+                items: completions.attributes.map(a => {
+                  const item: CompletionItem = ({
+                    label: a.name,
+                    kind: CompletionItemKind.Field,
+                    documentation: a.description,
+                    sortText: a.sortKey
+                  });
+                  if (a.type) {
+                    item.detail = `{${a.type}}`;
+                  }
+                  if (a.inheritedFrom) {
+                    if (item.detail) {
+                      item.detail = `${item.detail} ⊃ ${a.inheritedFrom}`;
+                    } else {
+                      item.detail = `⊃ ${a.inheritedFrom}`;
+                    }
+                  }
+                  return item;
+                }),
+              };
+            }
+          }
+          return;
+        });
 
 function scanDocument(document: TextDocument) {
   if (editorService) {
