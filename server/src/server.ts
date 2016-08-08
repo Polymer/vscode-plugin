@@ -50,8 +50,8 @@ let workspaceRoot: string;
 connection.onInitialize((params): InitializeResult => {
   workspaceRoot = params.rootPath;
   connection.console.log(`workspaceRoot: ${workspaceRoot}`);
-  editorService = new EditorService(
-      new Analyzer({urlLoader: new FSUrlLoader(workspaceRoot)}));
+  editorService =
+      new EditorService({urlLoader: new FSUrlLoader(workspaceRoot)});
   documents.all().forEach(scanDocument);
   return <InitializeResult>{
     capabilities: {
