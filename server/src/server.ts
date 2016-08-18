@@ -91,8 +91,8 @@ connection.onDefinition((async(textPosition) => {
       let definition: Location = {
         uri: getUriForLocalPath(location.file),
         range: {
-          start: {line: location.line, character: location.column},
-          end: {line: location.line, character: location.column}
+          start: {line: location.start.line, character: location.end.column},
+          end: {line: location.end.line, character: location.end.column}
         }
       };
       return definition;
