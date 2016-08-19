@@ -12,7 +12,8 @@ import {CompletionList, Hover, Location, Range, IPCMessageReader, IPCMessageWrit
 import * as vscode from 'vscode-languageserver';
 import {Analyzer} from 'polymer-analyzer';
 import {FSUrlLoader} from 'polymer-analyzer/lib/url-loader/fs-url-loader';
-import {EditorService, Position} from 'polymer-analyzer/lib/editor-service';
+import {EditorService, Position, Severity} from 'polymer-analyzer/lib/editor-service';
+import {SourceRange} from 'polymer-analyzer/lib/ast/ast';
 
 // The settings interface describe the server relevant settings part
 interface Settings {
@@ -52,7 +53,7 @@ connection.onInitialize((params): InitializeResult => {
   connection.console.log(`workspaceRoot: ${workspaceRoot}`);
   editorService =
       new EditorService({urlLoader: new FSUrlLoader(workspaceRoot)});
-  documents.all().forEach(scanDocument);
+  documents.all().forEach(d => scanDocument(d));
   return <InitializeResult>{
     capabilities: {
       // Tell the client that the server works in FULL text document sync mode
@@ -68,8 +69,10 @@ connection.onInitialize((params): InitializeResult => {
 // The content of a text document has changed. This event is emitted
 // when the text document is first opened or when its content has changed.
 documents.onDidChangeContent((change) => {
-  scanDocument(change.document);
+  scanDocument(change.document, connection);
 });
+
+
 
 connection.onHover(async(textPosition) => {
   const localPath = getWorkspacePathToFile(textPosition.textDocument);
@@ -90,10 +93,7 @@ connection.onDefinition((async(textPosition) => {
     if (location && location.file) {
       let definition: Location = {
         uri: getUriForLocalPath(location.file),
-        range: {
-          start: {line: location.start.line, character: location.end.column},
-          end: {line: location.end.line, character: location.end.column}
-        }
+        range: convertRange(location)
       };
       return definition;
     }
@@ -160,15 +160,6 @@ connection.onCompletion(
           return;
         });
 
-function scanDocument(document: TextDocument) {
-  if (editorService) {
-    const localPath = getWorkspacePathToFile(document);
-    if (localPath) {
-      editorService.fileChanged(localPath, document.getText());
-    }
-  }
-}
-
 function getWorkspacePathToFile(doc: {uri: string}): string|undefined {
   const match = doc.uri.match(/^file:\/\/(.*)/);
   if (!match || !match[1] || !workspaceRoot) {
@@ -184,6 +175,54 @@ function getUriForLocalPath(localPath: string): string {
 function convertPosition(position: vscode.Position): Position {
   return {line: position.line, column: position.character};
 }
+
+function convertRange(range: SourceRange): Range {
+  return {
+    start: {line: range.start.line, character: range.start.column},
+    end: {line: range.end.line, character: range.end.column}
+  };
+}
+
+function convertSeverity(severity: Severity): DiagnosticSeverity {
+  switch (severity) {
+    case Severity.ERROR:
+      return DiagnosticSeverity.Error;
+    case Severity.WARNING:
+      return DiagnosticSeverity.Warning;
+    case Severity.INFO:
+      return DiagnosticSeverity.Information;
+    default:
+      throw new Error(
+          `This should never happen. Got a severity of ${severity}`);
+  }
+}
+
+async function scanDocument(document: TextDocument, connection?: IConnection) {
+  if (editorService) {
+    const localPath = getWorkspacePathToFile(document);
+    if (!localPath) {
+      return;
+    }
+    editorService.fileChanged(localPath, document.getText());
+
+    if (connection) {
+      const diagnostics: Diagnostic[] = [];
+      const warnings = await editorService.getWarningsFor(localPath);
+      for (const warning of warnings) {
+        diagnostics.push({
+          code: warning.code,
+          message: warning.message,
+          range: convertRange(warning.sourceRange),
+          source: 'polymer',
+          severity: convertSeverity(warning.severity),
+        });
+      }
+      connection.sendDiagnostics({diagnostics, uri: document.uri});
+    }
+  }
+}
+
+
 
 /*
 connection.onDidOpenTextDocument((params) => {
