@@ -12,7 +12,8 @@ import {CompletionList, Hover, Location, Range, IPCMessageReader, IPCMessageWrit
 import * as vscode from 'vscode-languageserver';
 import {Analyzer} from 'polymer-analyzer';
 import {FSUrlLoader} from 'polymer-analyzer/lib/url-loader/fs-url-loader';
-import {EditorService, Position, Severity} from 'polymer-analyzer/lib/editor-service';
+import {PackageUrlResolver} from 'polymer-analyzer/lib/url-loader/package-url-resolver';
+import {EditorService, Position, Severity, TypeaheadCompletion} from 'polymer-analyzer/lib/editor-service';
 import {SourceRange} from 'polymer-analyzer/lib/ast/ast';
 
 // The settings interface describe the server relevant settings part
@@ -51,8 +52,10 @@ let workspaceRoot: string;
 connection.onInitialize((params): InitializeResult => {
   workspaceRoot = params.rootPath;
   connection.console.log(`workspaceRoot: ${workspaceRoot}`);
-  editorService =
-      new EditorService({urlLoader: new FSUrlLoader(workspaceRoot)});
+  editorService = new EditorService({
+    urlLoader: new FSUrlLoader(workspaceRoot),
+    urlResolver: new PackageUrlResolver()
+  });
   documents.all().forEach(d => scanDocument(d));
   return <InitializeResult>{
     capabilities: {
@@ -107,58 +110,71 @@ connection.onDidChangeWatchedFiles((change) => {
 
 
 // This handler provides the initial list of the completion items.
-connection.onCompletion(
-    async function(textPosition: TextDocumentPositionParams):
-        Promise<CompletionList|undefined> {
-          // The pass parameter contains the position of the text document in
-          // which code complete got requested. For the example we ignore this
-          // info and always provide the same completion items.
-          const localPath = getWorkspacePathToFile(textPosition.textDocument);
-          if (localPath && editorService) {
-            const completions = await editorService.getTypeaheadCompletionsFor(
-                localPath, convertPosition(textPosition.position));
-            if (!completions) {
-              return;
-            }
-            if (completions.kind === 'element-tags') {
-              return {
-                isIncomplete: false,
-                items: completions.elements.map(c => {
-                  return <CompletionItem>{
-                    label: `<${c.tagname}>`,
-                    kind: CompletionItemKind.Class,
-                    documentation: c.description,
-                    insertText: c.expandTo
-                  };
-                }),
-              };
-            } else if (completions.kind === 'attributes') {
-              return {
-                isIncomplete: false,
-                items: completions.attributes.map(a => {
-                  const item: CompletionItem = ({
-                    label: a.name,
-                    kind: CompletionItemKind.Field,
-                    documentation: a.description,
-                    sortText: a.sortKey
-                  });
-                  if (a.type) {
-                    item.detail = `{${a.type}}`;
-                  }
-                  if (a.inheritedFrom) {
-                    if (item.detail) {
-                      item.detail = `${item.detail} ⊃ ${a.inheritedFrom}`;
-                    } else {
-                      item.detail = `⊃ ${a.inheritedFrom}`;
-                    }
-                  }
-                  return item;
-                }),
-              };
-            }
+connection.onCompletion(async function(
+    textPosition:
+        TextDocumentPositionParams): Promise<CompletionList|undefined> {
+  // The pass parameter contains the position of the text document in
+  // which code complete got requested. For the example we ignore this
+  // info and always provide the same completion items.
+  const localPath = getWorkspacePathToFile(textPosition.textDocument);
+  if (!localPath || !editorService) {
+    return;
+  }
+  const completions: (TypeaheadCompletion | undefined) =
+      await editorService.getTypeaheadCompletionsFor(
+          localPath, convertPosition(textPosition.position));
+  if (!completions) {
+    return;
+  }
+  if (completions.kind === 'element-tags') {
+    return {
+      isIncomplete: false,
+      items: completions.elements.map(c => {
+        return <CompletionItem>{
+          label: `<${c.tagname}>`,
+          kind: CompletionItemKind.Class,
+          documentation: c.description,
+          insertText: c.expandTo
+        };
+      }),
+    };
+  } else if (completions.kind === 'attributes') {
+    return {
+      isIncomplete: false,
+      items: completions.attributes.map(a => {
+        const item: CompletionItem = {
+          label: a.name,
+          kind: CompletionItemKind.Field,
+          documentation: a.description,
+          sortText: a.sortKey
+        };
+        if (a.type) {
+          item.detail = `{${a.type}}`;
+        }
+        if (a.inheritedFrom) {
+          if (item.detail) {
+            item.detail = `${item.detail} ⊃ ${a.inheritedFrom}`;
+          } else {
+            item.detail = `⊃ ${a.inheritedFrom}`;
           }
-          return;
-        });
+        }
+        return item;
+      }),
+    };
+  } else if (completions.kind === 'resource-paths') {
+    return {
+      isIncomplete: false,
+      items: completions.paths.map(p => {
+        const item: CompletionItem = {label: p, kind: CompletionItemKind.File};
+        if (completions.prefix && p.startsWith(completions.prefix)) {
+          // Only insert text to complete the text typed so far.
+          item.insertText = p.substring(completions.prefix.length);
+        }
+        return item;
+      })
+    };
+  }
+});
 
 function getWorkspacePathToFile(doc: {uri: string}): string|undefined {
   const match = doc.uri.match(/^file:\/\/(.*)/);
