@@ -1,2 +1,5 @@
-# vscode-languageserver-node-example
-Sample language server implemented in Node
+# vscode-plugin
+
+Does some web stuff from vs code isn't that neat.
+
+
