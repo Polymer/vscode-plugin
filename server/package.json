@@ -1,8 +1,8 @@
 {
-  "name": "language-server-example",
-  "description": "Example implementation of a language server in node.",
+  "name": "polymer-vscode-server",
+  "description": "Polymer language server for vscode.",
   "version": "0.0.1",
-  "author": "Microsoft Corporation",
+  "author": "Polymer Project Authors",
   "license": "MIT",
   "engines": {
     "node": "*"
