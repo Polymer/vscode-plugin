@@ -7,6 +7,10 @@
   "engines": {
     "node": "*"
   },
+  "repository": {
+		"type": "git",
+		"url": "https://github.com/Polymer/vscode-plugin"
+	},
   "dependencies": {
     "@types/node": "^6.0.31",
     "vscode-languageserver": "^2.2.0"
