@@ -13,8 +13,12 @@ import * as vscode from 'vscode-languageserver';
 import {Analyzer} from 'polymer-analyzer';
 import {FSUrlLoader} from 'polymer-analyzer/lib/url-loader/fs-url-loader';
 import {PackageUrlResolver} from 'polymer-analyzer/lib/url-loader/package-url-resolver';
-import {EditorService, Position, Severity, TypeaheadCompletion} from 'polymer-analyzer/lib/editor-service';
-import {SourceRange} from 'polymer-analyzer/lib/ast/ast';
+import {Severity} from 'polymer-analyzer/lib/warning/warning';
+
+import {LocalEditorService} from 'polymer-analyzer/lib/editor-service/local-editor-service';
+import {EditorService, SourcePosition, TypeaheadCompletion} from 'polymer-analyzer/lib/editor-service/editor-service';
+
+import {SourceRange} from 'polymer-analyzer/lib/model/model';
 
 // The settings interface describe the server relevant settings part
 interface Settings {
@@ -52,7 +56,7 @@ let workspaceRoot: string;
 connection.onInitialize((params): InitializeResult => {
   workspaceRoot = params.rootPath;
   connection.console.log(`workspaceRoot: ${workspaceRoot}`);
-  editorService = new EditorService({
+  editorService = new LocalEditorService({
     urlLoader: new FSUrlLoader(workspaceRoot),
     urlResolver: new PackageUrlResolver()
   });
@@ -80,7 +84,7 @@ documents.onDidChangeContent((change) => {
 connection.onHover(async(textPosition) => {
   const localPath = getWorkspacePathToFile(textPosition.textDocument);
   if (localPath && editorService) {
-    const documentation = await editorService.getDocumentationFor(
+    const documentation = await editorService.getDocumentationAtPosition(
         localPath, convertPosition(textPosition.position));
     if (documentation) {
       return {contents: documentation};
@@ -91,7 +95,7 @@ connection.onHover(async(textPosition) => {
 connection.onDefinition((async(textPosition) => {
   const localPath = getWorkspacePathToFile(textPosition.textDocument);
   if (localPath && editorService) {
-    const location = await editorService.getDefinitionFor(
+    const location = await editorService.getDefinitionForFeatureAtPosition(
         localPath, convertPosition(textPosition.position));
     if (location && location.file) {
       let definition: Location = {
@@ -120,8 +124,8 @@ connection.onCompletion(async function(
   if (!localPath || !editorService) {
     return;
   }
-  const completions: (TypeaheadCompletion | undefined) =
-      await editorService.getTypeaheadCompletionsFor(
+  const completions: (TypeaheadCompletion|undefined) =
+      await editorService.getTypeaheadCompletionsAtPosition(
           localPath, convertPosition(textPosition.position));
   if (!completions) {
     return;
@@ -161,19 +165,19 @@ connection.onCompletion(async function(
         return item;
       }),
     };
-  } else if (completions.kind === 'resource-paths') {
-    return {
-      isIncomplete: false,
-      items: completions.paths.map(p => {
-        const item: CompletionItem = {label: p, kind: CompletionItemKind.File};
-        if (completions.prefix && p.startsWith(completions.prefix)) {
-          // Only insert text to complete the text typed so far.
-          item.insertText = p.substring(completions.prefix.length);
-        }
-        return item;
-      })
-    };
-  }
+  } /* else if (completions.kind === 'resource-paths') {
+     return {
+       isIncomplete: false,
+       items: completions.paths.map(p => {
+         const item: CompletionItem = {label: p, kind: CompletionItemKind.File};
+         if (completions.prefix && p.startsWith(completions.prefix)) {
+           // Only insert text to complete the text typed so far.
+           item.insertText = p.substring(completions.prefix.length);
+         }
+         return item;
+       })
+     };
+   } */
 });
 
 function getWorkspacePathToFile(doc: {uri: string}): string|undefined {
@@ -188,7 +192,7 @@ function getUriForLocalPath(localPath: string): string {
   return `file://${workspaceRoot}/${localPath}`;
 }
 
-function convertPosition(position: vscode.Position): Position {
+function convertPosition(position: vscode.Position): SourcePosition {
   return {line: position.line, column: position.character};
 }
 
@@ -223,7 +227,7 @@ async function scanDocument(document: TextDocument, connection?: IConnection) {
 
     if (connection) {
       const diagnostics: Diagnostic[] = [];
-      const warnings = await editorService.getWarningsFor(localPath);
+      const warnings = await editorService.getWarningsForFile(localPath);
       for (const warning of warnings) {
         diagnostics.push({
           code: warning.code,
