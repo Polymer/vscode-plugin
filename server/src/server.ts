@@ -15,8 +15,8 @@ import {FSUrlLoader} from 'polymer-analyzer/lib/url-loader/fs-url-loader';
 import {PackageUrlResolver} from 'polymer-analyzer/lib/url-loader/package-url-resolver';
 import {Severity} from 'polymer-analyzer/lib/warning/warning';
 
-import {LocalEditorService} from 'polymer-editor-service/lib/local-editor-service';
-import {EditorService, SourcePosition, TypeaheadCompletion} from 'polymer-editor-service/lib/editor-service';
+import {LocalEditorService} from 'polymer-analyzer/lib/editor-service/local-editor-service';
+import {EditorService, SourcePosition, TypeaheadCompletion} from 'polymer-analyzer/lib/editor-service/editor-service';
 
 import {SourceRange} from 'polymer-analyzer/lib/model/model';
 
