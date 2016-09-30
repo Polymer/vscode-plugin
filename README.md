@@ -11,7 +11,7 @@ Features:
 
 ## Installing
 
-The plugin will be published on the official marketplace once it's released. For now, download the latest release [directly off github](https://github.com/Polymer/vscode-plugin/releases) and install it with the `code` command on your CLI. e.g.
+The plugin will be published on the official marketplace once it's released. For now, download the latest `.vsix` file [directly off github](https://github.com/Polymer/vscode-plugin/releases) and install it with the `code` command on your CLI. e.g.
 
     code ./polymer-plugin-0.0.1.vsix
 
