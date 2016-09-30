@@ -1,5 +1,5 @@
 /**
- * This is a description of VanillaElement.
+ * Hello from VanillaElement's documentation!
  */
 class VanillaElement extends HTMLElement {
   static get observedAttributes() {
