@@ -34,8 +34,8 @@ export function activate(context: ExtensionContext) {
     // Register the server for plain text documents
     documentSelector: ['plaintext', 'html', 'javascript'],
     synchronize: {
-      // Synchronize the setting section 'languageServerExample' to the server
-      configurationSection: 'languageServerExample',
+      // Synchronize the setting section 'polymerVscodePlugin' to the server
+      configurationSection: 'polymerVscodePlugin',
       // Notify the server about file changes to '.clientrc files contain in the
       // workspace
       fileEvents: workspace.createFileSystemWatcher('**/.clientrc')
@@ -44,7 +44,7 @@ export function activate(context: ExtensionContext) {
 
   // Create the language client and start the client.
   let disposable = new LanguageClient(
-                       'Language Server Example', serverOptions, clientOptions)
+                       'polymerVscodePlugin', serverOptions, clientOptions)
                        .start();
 
   // Push the disposable to the context's subscriptions so that the

@@ -1,6 +1,6 @@
 {
   "name": "polymer-vscode-server",
-  "description": "Polymer language server for vscode.",
+  "description": "polymer-editor-service language server for vscode.",
   "version": "0.0.1",
   "author": "Polymer Project Authors",
   "license": "MIT",

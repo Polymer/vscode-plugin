@@ -22,7 +22,7 @@ import {SourceRange} from 'polymer-analyzer/lib/model/model';
 
 // The settings interface describe the server relevant settings part
 interface Settings {
-  languageServerExample: OurSettings;
+  polymerVscodePlugin: OurSettings;
 }
 
 // The settings we defined in the client's package.json file.
@@ -117,9 +117,6 @@ connection.onDidChangeWatchedFiles((change) => {
 connection.onCompletion(async function(
     textPosition:
         TextDocumentPositionParams): Promise<CompletionList|undefined> {
-  // The pass parameter contains the position of the text document in
-  // which code complete got requested. For the example we ignore this
-  // info and always provide the same completion items.
   const localPath = getWorkspacePathToFile(textPosition.textDocument);
   if (!localPath || !editorService) {
     return;

@@ -1,3 +1,3 @@
-#README
+# polymer-vscode-language-service
 
-This is a language server sample implementation in node
+Maps the [polymer-editor-service](https://github.com/Polymer/polymer-editor-service)'s API to VS Code's language service API.

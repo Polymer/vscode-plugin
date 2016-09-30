@@ -1,4 +1,4 @@
-# VSCode Polymer Plugin
+# Polymer VSCode plugin
 
 Unlocks all of the power of the [Polymer Analyzer](https://github.com/Polymer/polymer-analyzer) in your editor.
 
