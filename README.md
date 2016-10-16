@@ -1,6 +1,6 @@
 # Polymer VSCode plugin
 
-Unlocks all of the power of the [Polymer Analyzer] in your editor. See the [Polymer Editor Service] for more info, including links to other editor plugins.
+Unlocks all of the power of the [Polymer Analyzer] in [VS Code]. See the [Polymer Editor Service] for more info, including links to other editor plugins.
 
 Features:
 
@@ -36,3 +36,4 @@ Then in the `server` vscode window run the `build` task, which will automaticall
 
 [Polymer Analyzer]: https://github.com/Polymer/polymer-analyzer
 [polymer editor service]: https://github.com/Polymer/polymer-editor-service
+[VS Code]: https://code.visualstudio.com/
