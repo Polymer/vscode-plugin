@@ -4,12 +4,11 @@
 		"module": "commonjs",
 		"moduleResolution": "node",
 		"outDir": "out",
-		"noLib": true,
+		"lib": ["es6"],
 		"sourceMap": true
 	},
-	"exclude": [
-		"node_modules",
-		"server",
-		"example_project"
+	"include": [
+		"src/**/*.ts",
+		"test/**/*.ts"
 	]
 }
