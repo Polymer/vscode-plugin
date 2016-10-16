@@ -6,10 +6,13 @@
 		"sourceMap": true,
 		"outDir": "../client/server",
 		"strictNullChecks": true,
-		"noImplicitAny": true
+		"noImplicitAny": true,
+		"noImplicitThis": true,
+		"lib": [
+			"es6"
+		]
 	},
 	"files": [
-		"src/server.ts",
-		"typings/promise.d.ts"
+		"src/server.ts"
 	]
 }

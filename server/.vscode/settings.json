@@ -1,5 +1,6 @@
 // Place your settings in this file to overwrite default and user settings.
 {
-  "clang-format.formatOnSave": true,
-  "clang-format.fallbackStyle": "file"
+  "editor.formatOnSave": true,
+  "editor.formatOnType": true,
+  "clang-format.style": "file"
 }
