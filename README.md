@@ -1,4 +1,4 @@
-# Polymer VSCode plugin
+# Polymer IDE
 
 Unlocks all of the power of the [Polymer Analyzer] in [VS Code]. See the [Polymer Editor Service] for more info, including links to other editor plugins.
 

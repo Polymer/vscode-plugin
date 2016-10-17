@@ -1,9 +1,9 @@
 {
-	"name": "polymer-vscode-plugin",
+	"name": "polymer-ide",
 	"description": "Provides linting, autocompletion, and more for web components.",
 	"author": "Polymer Authors",
 	"license": "MIT",
-	"version": "0.0.2",
+	"version": "0.1.0",
 	"publisher": "polymer",
 	"engines": {
 		"vscode": "^1.0.0"
