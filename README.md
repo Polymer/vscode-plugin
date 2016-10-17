@@ -1,6 +1,6 @@
 # Polymer IDE
 
-Unlocks all of the power of the [Polymer Analyzer] in [VS Code]. See the [Polymer Editor Service] for more info, including links to other editor plugins.
+Unlocks all of the power of the [Polymer Analyzer] in [VS Code]. See the [Polymer Editor Service] for more info, including links to plugins for other editors.
 
 Features:
 
@@ -11,12 +11,11 @@ Features:
 
 ## Installing
 
-The plugin will be published on the official marketplace once it's released. For now, download the latest `.vsix` file [directly off github](https://github.com/Polymer/vscode-plugin/releases) and install it with the `code` command on your CLI. e.g.
-
-    code --install-extension ./polymer-plugin-0.0.2.vsix
+In quick open (ctrl/cmd + P), run this command: `ext install polymer-ide`, or see it in the marketplace [here](https://marketplace.visualstudio.com/items?itemName=polymer.polymer-ide).
 
 ### Try it out on a simple example project
 
+    git clone git@github.com:Polymer/vscode-plugin.git
     cd vscode-plugin/client/example_project
     bower install
     code ./
@@ -33,6 +32,7 @@ Language server plugins to vscode are split across two separate projects, the la
     code .
 
 Then in the `server` vscode window run the `build` task, which will automatically build the server on each change (or run `npm run watch` in the server directory). Then in the `client` vscode window, just press F5 to start a debug instance of vscode with the local version of the plugin running.
+
 
 [Polymer Analyzer]: https://github.com/Polymer/polymer-analyzer
 [polymer editor service]: https://github.com/Polymer/polymer-editor-service
