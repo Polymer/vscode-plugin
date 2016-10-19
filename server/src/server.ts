@@ -182,6 +182,7 @@ function getWorkspacePathToFile(doc: {uri: string}): string|undefined {
   if (!match || !match[1] || !workspaceRoot) {
     return undefined;
   }
+  match[1] = match[1].replace(/^\/(\D)(\%3A\/)/,'$1:/') //convert %3A to : only if uri starts /[letter]%3A/
   return path.relative(workspaceRoot, match[1]);
 }
 
