@@ -25,6 +25,6 @@
   "scripts": {
     "compile": "installServerIntoExtension ../client ./package.json ./tsconfig.json && tsc -p .",
     "watch": "installServerIntoExtension ../client ./package.json ./tsconfig.json && tsc --watch -p .",
-    "format": "clang-format -i src/*"
+    "format": "clang-format --style=file -i src/*"
   }
 }

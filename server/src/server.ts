@@ -1,8 +1,7 @@
 /* --------------------------------------------------------------------------------------------
- * Copyright (c) Microsoft Corporation. All rights reserved.
- * Licensed under the MIT License. See License.txt in the project root for
- * license information.
- * ------------------------------------------------------------------------------------------
+ * Copyright multiple authors.
+ * See License.txt for license information.
+ ------------------------------------------------------------------------------------------
  */
 'use strict';
 
@@ -12,7 +11,7 @@ import {CompletionList, Hover, Location, Range, createConnection, IConnection, T
 import {Analyzer} from 'polymer-analyzer';
 import {FSUrlLoader} from 'polymer-analyzer/lib/url-loader/fs-url-loader';
 import {PackageUrlResolver} from 'polymer-analyzer/lib/url-loader/package-url-resolver';
-import {Severity} from 'polymer-analyzer/lib/warning/warning';
+import {Severity, WarningCarryingException} from 'polymer-analyzer/lib/warning/warning';
 
 import {LocalEditorService} from 'polymer-analyzer/lib/editor-service/local-editor-service';
 import {EditorService, SourcePosition, TypeaheadCompletion} from 'polymer-analyzer/lib/editor-service/editor-service';
@@ -76,6 +75,10 @@ documents.onDidChangeContent((change) => {
 
 
 connection.onHover(async(textPosition) => {
+  return handleErrors(getDocsForHover(textPosition));
+});
+
+async function getDocsForHover(textPosition: TextDocumentPositionParams) {
   const localPath = getWorkspacePathToFile(textPosition.textDocument);
   if (localPath && editorService) {
     const documentation = await editorService.getDocumentationAtPosition(
@@ -84,9 +87,13 @@ connection.onHover(async(textPosition) => {
       return {contents: documentation};
     }
   }
+}
+
+connection.onDefinition(async(textPosition) => {
+  return handleErrors(getDefinition(textPosition));
 });
 
-connection.onDefinition((async(textPosition) => {
+async function getDefinition(textPosition: TextDocumentPositionParams) {
   const localPath = getWorkspacePathToFile(textPosition.textDocument);
   if (localPath && editorService) {
     const location = await editorService.getDefinitionForFeatureAtPosition(
@@ -99,12 +106,15 @@ connection.onDefinition((async(textPosition) => {
       return definition;
     }
   }
-}));
+}
 
 // This handler provides the initial list of the completion items.
-connection.onCompletion(async function(
-    textPosition:
-        TextDocumentPositionParams): Promise<CompletionList|undefined> {
+connection.onCompletion(async(textPosition) => {
+  return handleErrors(autoComplete(textPosition));
+});
+
+async function autoComplete(textPosition: TextDocumentPositionParams):
+    Promise<CompletionList|undefined> {
   const localPath = getWorkspacePathToFile(textPosition.textDocument);
   if (!localPath || !editorService) {
     return;
@@ -150,20 +160,8 @@ connection.onCompletion(async function(
         return item;
       }),
     };
-  } /* else if (completions.kind === 'resource-paths') {
-     return {
-       isIncomplete: false,
-       items: completions.paths.map(p => {
-         const item: CompletionItem = {label: p, kind: CompletionItemKind.File};
-         if (completions.prefix && p.startsWith(completions.prefix)) {
-           // Only insert text to complete the text typed so far.
-           item.insertText = p.substring(completions.prefix.length);
-         }
-         return item;
-       })
-     };
-   } */
-});
+  }
+}
 
 function getWorkspacePathToFile(doc: {uri: string}): string|undefined {
   // We only support file urls. Extract everything after file:///
@@ -214,7 +212,11 @@ function convertSeverity(severity: Severity): DiagnosticSeverity {
   }
 }
 
-async function scanDocument(document: TextDocument, connection?: IConnection) {
+function scanDocument(document: TextDocument, connection?: IConnection) {
+  return handleErrors(_scanDocument(document, connection));
+}
+
+async function _scanDocument(document: TextDocument, connection?: IConnection) {
   if (editorService) {
     const localPath = getWorkspacePathToFile(document);
     if (!localPath) {
@@ -239,26 +241,20 @@ async function scanDocument(document: TextDocument, connection?: IConnection) {
   }
 }
 
-
-
-/*
-connection.onDidOpenTextDocument((params) => {
-        // A text document got opened in VSCode.
-        // params.uri uniquely identifies the document. For documents store on
-disk this is a file URI.
-        // params.text the initial full content of the document.
-        connection.console.log(`${params.uri} opened.`);
-});
-
-connection.onDidChangeTextDocument((params) => {
-        // The content of a text document did change in VSCode.
-        // params.uri uniquely identifies the document.
-        // params.contentChanges describe the content changes to the document.
-        connection.console.log(`${params.uri} changed:
-${JSON.stringify(params.contentChanges)}`);
-});
-
-*/
+async function handleErrors<Result>(promise: Promise<Result>):
+    Promise<Result|undefined> {
+  try {
+    return await promise;
+  } catch (err) {
+    // Ignore WarningCarryingExceptions, they're expected, and made visible
+    //   to the user in a useful way. All other exceptions should be logged
+    //   if possible.
+    if (connection && !(err instanceof WarningCarryingException)) {
+      connection.console.error(err.stack || err.message || err);
+    }
+    return undefined;
+  }
+}
 
 // Listen on the connection
 connection.listen();
