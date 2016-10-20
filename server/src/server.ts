@@ -182,7 +182,7 @@ function getWorkspacePathToFile(doc: {uri: string}): string|undefined {
   if (!match || !match[1] || !workspaceRoot) {
     return undefined;
   }
-  return path.relative(workspaceRoot, match[1]);
+  return path.relative(workspaceRoot, decodeURI(match[1]));
 }
 
 function getUriForLocalPath(localPath: string): string {
