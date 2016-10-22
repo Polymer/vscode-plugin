@@ -178,11 +178,20 @@ connection.onCompletion(async function(
 });
 
 function getWorkspacePathToFile(doc: {uri: string}): string|undefined {
-  const match = doc.uri.match(/^file:\/\/(.*)/);
+  const match = doc.uri.match(/^file:\/\/\/?(.*)/);
   if (!match || !match[1] || !workspaceRoot) {
     return undefined;
   }
-  return path.relative(workspaceRoot, decodeURI(match[1]));
+  // Decode the URI encoding. TODO: something something unicode?
+  const decodedPath = decodeURIComponent(match[1]);
+  // We've stripped off the leading `/`, which on unix means that we have a
+  // relative-looking path, but on Windows we still have an absolute path that
+  // starts with e.g. `C:\`. We can normalize these two by forcing both into
+  // an absolute path, like so:
+  const absolutePath = path.resolve('/', decodedPath);
+  // But what the editor service really wants is a path relative to the
+  // workspace root. So do that.
+  return path.relative(workspaceRoot, absolutePath);
 }
 
 function getUriForLocalPath(localPath: string): string {
