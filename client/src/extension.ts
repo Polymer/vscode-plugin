@@ -12,7 +12,8 @@ import {workspace, Disposable, ExtensionContext} from 'vscode';
 import {LanguageClient, LanguageClientOptions, SettingMonitor, ServerOptions, TransportKind} from 'vscode-languageclient';
 
 export function activate(context: ExtensionContext) {
-  // The server is implemented in node
+  // The server is implemented in node, and can be found in the server subdir
+  // of the client, which is where the server's build command puts it.
   let serverModule = context.asAbsolutePath(path.join('server', 'server.js'));
   // The debug options for the server
   let debugOptions = {execArgv: ['--nolazy', '--debug=6004']};
@@ -21,10 +22,10 @@ export function activate(context: ExtensionContext) {
   // are used
   // Otherwise the run options are used
   let serverOptions: ServerOptions = {
-    run: {module: serverModule, transport: TransportKind.ipc},
+    run: {module: serverModule, transport: TransportKind.stdio},
     debug: {
       module: serverModule,
-      transport: TransportKind.ipc,
+      transport: TransportKind.stdio,
       options: debugOptions
     }
   }
@@ -34,17 +35,17 @@ export function activate(context: ExtensionContext) {
     // Register the server for the appropriate file types.
     documentSelector: ['html', 'javascript'],
     synchronize: {
-      // Synchronize the setting section 'polymerVscodePlugin' to the server
-      configurationSection: 'polymerVscodePlugin',
+      // Synchronize the setting section 'polymer-ide' to the server
+      configurationSection: 'polymer-ide',
       // Notify the server about file changes to '.clientrc files contain in the
       // workspace
       fileEvents: workspace.createFileSystemWatcher('**/.clientrc')
     }
-  }
+  };
 
   // Create the language client and start the client.
   let disposable = new LanguageClient(
-                       'polymerVscodePlugin', serverOptions, clientOptions)
+                       'polymer-ide', serverOptions, clientOptions)
                        .start();
 
   // Push the disposable to the context's subscriptions so that the

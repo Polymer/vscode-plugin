@@ -8,8 +8,7 @@
 
 import * as path from 'path';
 
-import {CompletionList, Hover, Location, Range, IPCMessageReader, IPCMessageWriter, createConnection, IConnection, TextDocumentSyncKind, TextDocuments, TextDocument, Diagnostic, DiagnosticSeverity, InitializeParams, InitializeResult, TextDocumentPositionParams, CompletionItem, CompletionItemKind} from 'vscode-languageserver';
-import * as vscode from 'vscode-languageserver';
+import {CompletionList, Hover, Location, Range, createConnection, IConnection, TextDocumentSyncKind, TextDocuments, TextDocument, Diagnostic, DiagnosticSeverity, InitializeParams, InitializeResult, TextDocumentPositionParams, CompletionItem, CompletionItemKind, Position as LSPosition} from 'vscode-languageserver';
 import {Analyzer} from 'polymer-analyzer';
 import {FSUrlLoader} from 'polymer-analyzer/lib/url-loader/fs-url-loader';
 import {PackageUrlResolver} from 'polymer-analyzer/lib/url-loader/package-url-resolver';
@@ -30,8 +29,7 @@ interface OurSettings {}
 
 // Create a connection for the server. The connection uses Node's IPC as a
 // transport
-let connection: IConnection = createConnection(
-    new IPCMessageReader(process), new IPCMessageWriter(process));
+let connection: IConnection = createConnection(process.stdin, process.stdout);
 
 // The settings have changed. Is send on server activation
 // as well.
@@ -55,7 +53,6 @@ documents.listen(connection);
 let workspaceRoot: string;
 connection.onInitialize((params): InitializeResult => {
   workspaceRoot = params.rootPath;
-  connection.console.log(`workspaceRoot: ${workspaceRoot}`);
   editorService = new LocalEditorService({
     urlLoader: new FSUrlLoader(workspaceRoot),
     urlResolver: new PackageUrlResolver()
@@ -106,12 +103,6 @@ connection.onDefinition((async(textPosition) => {
     }
   }
 }));
-
-connection.onDidChangeWatchedFiles((change) => {
-  // Monitored files have change in VSCode
-  connection.console.log('We recevied an file change event');
-});
-
 
 // This handler provides the initial list of the completion items.
 connection.onCompletion(async function(
@@ -201,7 +192,7 @@ function getUriForLocalPath(localPath: string): string {
   return `file://${workspaceRoot}/${localPath}`;
 }
 
-function convertPosition(position: vscode.Position): SourcePosition {
+function convertPosition(position: LSPosition): SourcePosition {
   return {line: position.line, column: position.character};
 }
 
@@ -242,7 +233,7 @@ async function scanDocument(document: TextDocument, connection?: IConnection) {
           code: warning.code,
           message: warning.message,
           range: convertRange(warning.sourceRange),
-          source: 'polymer',
+          source: 'polymer-ide',
           severity: convertSeverity(warning.severity),
         });
       }
