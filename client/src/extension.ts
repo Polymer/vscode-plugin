@@ -31,8 +31,8 @@ export function activate(context: ExtensionContext) {
 
   // Options to control the language client
   let clientOptions: LanguageClientOptions = {
-    // Register the server for plain text documents
-    documentSelector: ['plaintext', 'html', 'javascript'],
+    // Register the server for the appropriate file types.
+    documentSelector: ['html', 'javascript'],
     synchronize: {
       // Synchronize the setting section 'polymerVscodePlugin' to the server
       configurationSection: 'polymerVscodePlugin',
