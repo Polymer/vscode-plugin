@@ -178,6 +178,9 @@ connection.onCompletion(async function(
 });
 
 function getWorkspacePathToFile(doc: {uri: string}): string|undefined {
+  // We only support file urls. Extract everything after file:///
+  // Note the third slash. We pull that out too. See the absolute path
+  // generation code below.
   const match = doc.uri.match(/^file:\/\/\/?(.*)/);
   if (!match || !match[1] || !workspaceRoot) {
     return undefined;
