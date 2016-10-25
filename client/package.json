@@ -4,6 +4,7 @@
     "author": "Polymer Authors",
     "license": "MIT",
     "version": "0.1.1",
+    "icon": "./polymer.png",
     "publisher": "polymer",
     "engines": {
         "vscode": "^1.0.0"
