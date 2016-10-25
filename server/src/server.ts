@@ -27,12 +27,10 @@ interface Settings {
 // The settings we defined in the client's package.json file.
 interface OurSettings {}
 
-// Create a connection for the server. The connection uses Node's IPC as a
-// transport
+// Create a connection for the server. Communicate using stdio.
 let connection: IConnection = createConnection(process.stdin, process.stdout);
 
-// The settings have changed. Is send on server activation
-// as well.
+// The settings have changed. Is sent on server activation as well.
 connection.onDidChangeConfiguration((change) => {
   let settings = <Settings>change.settings;
 });
@@ -42,14 +40,14 @@ let editorService: EditorService|null = null;
 // Create a simple text document manager. The text document manager
 // supports full document sync only
 let documents: TextDocuments = new TextDocuments();
+
 // Make the text document manager listen on the connection
 // for open, change and close text document events
 documents.listen(connection);
 
 // After the server has started the client sends an initilize request. The
-// server receives
-// in the passed params the rootPath of the workspace plus the client
-// capabilites.
+// server receives in the passed params the rootPath of the workspace plus the
+// client capabilites.
 let workspaceRoot: string;
 connection.onInitialize((params): InitializeResult => {
   workspaceRoot = params.rootPath;
@@ -75,7 +73,6 @@ connection.onInitialize((params): InitializeResult => {
 documents.onDidChangeContent((change) => {
   scanDocument(change.document, connection);
 });
-
 
 
 connection.onHover(async(textPosition) => {
