@@ -11,6 +11,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 * Add an icon.
 
+### Fixed
+* Internal errors no longer cause an intrusive popup. They instead log to the plugin's output tray.
+
 ## [0.1.1] - 2016-10-25
 
 ### Fixed
