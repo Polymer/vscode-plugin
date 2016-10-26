@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 <!-- PRs should document any user-visible changes here. -->
 
+## [0.1.2] - 2016-10-26
+
 ### Added
 * Add an icon.
 
