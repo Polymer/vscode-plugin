@@ -12,15 +12,14 @@ import {workspace, Disposable, ExtensionContext} from 'vscode';
 import {LanguageClient, LanguageClientOptions, SettingMonitor, ServerOptions, TransportKind} from 'vscode-languageclient';
 
 export function activate(context: ExtensionContext) {
-  // The server is implemented in node, and can be found in the server subdir
-  // of the client, which is where the server's build command puts it.
-  let serverModule = context.asAbsolutePath(path.join('server', 'server.js'));
+  // The server is pulled in from npm, and can be found in our node_modules dir.
+  let serverModule = context.asAbsolutePath(path.join('node_modules','polymer-editor-service', 'lib', 'polymer-language-server.js'));
   // The debug options for the server
   let debugOptions = {execArgv: ['--nolazy', '--debug=6004']};
 
   // If the extension is launched in debug mode then the debug server options
-  // are used
-  // Otherwise the run options are used
+  // are used.
+  // Otherwise the run options are used.
   let serverOptions: ServerOptions = {
     run: {module: serverModule, transport: TransportKind.stdio},
     debug: {
