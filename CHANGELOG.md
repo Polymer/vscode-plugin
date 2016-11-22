@@ -8,6 +8,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 <!-- PRs should document any user-visible changes here. -->
 
+## [0.2.0] - 2016-11-21
+
+### Fixed
+
+* Updated to v1.1.1 of the editor service. This comes with some stability improvements, including:
+  * better handle errors when detecting Polymer Behaviors
+  * handle cyclic dependency graphs
+  * See the editor service changelog for more: https://github.com/Polymer/polymer-editor-service/blob/master/CHANGELOG.md#111---2016-11-21
+
 ## [0.1.2] - 2016-10-26
 
 ### Added
