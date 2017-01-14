@@ -39,7 +39,7 @@
         "@types/mocha": "^2.2.32"
     },
     "dependencies": {
-        "polymer-editor-service": "^1.1.1",
+        "polymer-editor-service": "^1.2.0",
         "vscode-languageclient": "^2"
     }
 }

@@ -8,6 +8,20 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 <!-- PRs should document any user-visible changes here. -->
 
+## [0.3.0] - 2017-01-13
+
+### Fixed
+
+* No longer warn for ES6 module or async/await syntax.
+* Fix several classes of race condition and deadlock that could result in a variety of incorrect warnings.
+* [Polymer] Extract pseudo elements from HTML comments
+* [Polymer] Property descriptors are allowed to be just a type name, like `value: String`.
+
+### Added
+
+* Added autocompletion for attribute values based on property information.
+
+
 ## [0.2.0] - 2016-11-21
 
 ### Fixed
