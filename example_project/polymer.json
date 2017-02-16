@@ -1,0 +1,11 @@
+{
+  "entrypoint": "index.html",
+  "sources": [
+    "*.html"
+  ],
+  "extraDependencies": [
+  ],
+  "lint": {
+    "rules": ["polymer-2"]
+  }
+}

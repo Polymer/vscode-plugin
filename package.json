@@ -26,7 +26,11 @@
             "type": "object",
             "title": "Polymer Plugin Configuration",
             "properties": {}
-        }
+        },
+        "jsonValidation": [{
+              "fileMatch": "polymer.json",
+              "url": "./node_modules/polymer-project-config/lib/schema.json"
+        }]
     },
     "scripts": {
         "vscode:prepublish": "tsc -p ./ || echo ''",
@@ -41,6 +45,7 @@
     },
     "dependencies": {
         "polymer-editor-service": "^1.2.0",
+        "polymer-project-config": "^2.0.0",
         "vscode-languageclient": "^2"
     }
 }
