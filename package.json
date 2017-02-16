@@ -1,5 +1,6 @@
 {
     "name": "polymer-ide",
+    "displayName": "Polymer IDE",
     "description": "Provides linting, autocompletion, and more for web components.",
     "author": "Polymer Authors",
     "license": "MIT",
