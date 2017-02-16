@@ -8,6 +8,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 <!-- PRs should document any user-visible changes here. -->
 
+## [0.3.1] - 2017-02-16
+
+### New Features
+
+* [Polymer] Provide a json schema for polymer.json files. This gives automatic validation, autocompletion, and hover-documentation for the fields of a polymer.json project.
+
 ## [0.3.0] - 2017-01-13
 
 ### Fixed
