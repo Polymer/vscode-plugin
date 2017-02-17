@@ -4,7 +4,7 @@
     "description": "Provides linting, autocompletion, and more for web components.",
     "author": "Polymer Authors",
     "license": "MIT",
-    "version": "0.3.0",
+    "version": "0.3.1",
     "icon": "polymer.png",
     "publisher": "polymer",
     "engines": {
@@ -27,10 +27,12 @@
             "title": "Polymer Plugin Configuration",
             "properties": {}
         },
-        "jsonValidation": [{
-              "fileMatch": "polymer.json",
-              "url": "./node_modules/polymer-project-config/lib/schema.json"
-        }]
+        "jsonValidation": [
+            {
+                "fileMatch": "polymer.json",
+                "url": "./node_modules/polymer-project-config/lib/schema.json"
+            }
+        ]
     },
     "scripts": {
         "vscode:prepublish": "tsc -p ./",
