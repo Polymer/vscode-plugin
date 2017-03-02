@@ -5,6 +5,13 @@
 
 <!--## [Unreleased]-->
 
+## 0.4.1 - 2017-03-02
+
+### Fixed
+
+* Fixed a class of issue where the IDE could fail to initialize. For example, projects with certain `polymer.json` keys, including Polymer Starter Kit. https://github.com/Polymer/vscode-plugin/issues/48
+* Now using vscode's URI implementation. This should eliminate any remaining issues on Windows.
+* Includes a number of powerful new lint passes. See [polymer-linter](https://github.com/Polymer/polymer-linter/blob/master/CHANGELOG.md#015---2017-03-03) for more info. Remember that you must configure your lint passes in polymer.json at the root of your workspace.
 
 ## 0.4.0 - 2017-02-22
 
