@@ -5,6 +5,11 @@
 
 <!--## [Unreleased]-->
 
+## 0.4.3 - 2017-03-20
+
+* Added many more lint rules.
+* Fixed a number of issues around recognizing Polymer 2.0 element declaration patterns. e.g. https://github.com/Polymer/vscode-plugin/issues/54 and https://github.com/Polymer/vscode-plugin/issues/53
+
 ## 0.4.2 - 2017-03-02
 
 ### Fixed
