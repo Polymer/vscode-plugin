@@ -24,8 +24,14 @@
     "contributes": {
         "configuration": {
             "type": "object",
-            "title": "Polymer Plugin Configuration",
-            "properties": {}
+            "title": "polymer-ide Configuration",
+            "properties": {
+                "polymer-ide.analyzeWholePackage": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "When true, warnings will be reported for all files, not just those that are open. Warnings will be more accurate but the initial analysis will be slower."
+                }
+            }
         },
         "jsonValidation": [
             {
