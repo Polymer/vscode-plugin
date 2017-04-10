@@ -3,8 +3,11 @@
   Uncomment out the header as necessary.
 -->
 
-## [Unreleased]
+<!--## [Unreleased]-->
 
+## 0.5.0 - 2017-04-10
+
+* [Polymer]: support autocompletion, tooltips, and jump to definition inside Polymer databinding expressions.
 * By default, warnings are now shown only for files that are currently open.
 * Fixed a bug whereby edits to files would not immediately affect files that depended on them.
 * New setting: `polymer-ide.analyzeWholePackage`. When true, warnings will be reported for all files in the package, not just those that are open. Warnings will be more accurate but the initial analysis will be slower.
