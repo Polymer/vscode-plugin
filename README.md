@@ -22,9 +22,11 @@ In quick open (ctrl/cmd + P), run this command: `ext install polymer-ide`, or se
 
 ## Developing
 
-> Node: Most of the vscode plugin's logic exists in the [Polymer Editor Service], so most changes will involve modifying that and using `npm link polymer-editor-service` in this package.
+Want to contribute to the polymer vscode plugin itself? Great!
 
-To develop:
+> Note: Most of the vscode plugin's logic exists in the [Polymer Editor Service], so most changes will involve modifying that and using `npm link polymer-editor-service` in this package.
+
+Launching a debug version of the vscode plugin is very simple:
 
     npm install
     code .
