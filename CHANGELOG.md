@@ -16,7 +16,7 @@
   * Added support for new JSDoc tags: @customElement, @polymer, @mixinFunction, @appliesMixin
   * Fixed a bug where we were too aggressive in associating HTML comments with
     nodes, such that any comment that came before a `<script>` tag e.g. could
-    become part of the description of the element defined therin.
+    become part of the description of the element defined therein.
   * Simplify rules for infering privacy. Now all features: classes, elements, properties, methods, etc have one set of rules for inferring privacy. Explicit js doc annotations are respected, otherwise `__foo` and `foo_` are private, `_foo` is protected, and `foo` is public.
   * Mix mixins into mixins.
   * Improved modeling of inheritance:
