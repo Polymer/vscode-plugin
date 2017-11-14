@@ -15,7 +15,7 @@ In quick open (ctrl/cmd + P), run this command: `ext install polymer-ide`, or se
 
 ### Try it out on a simple example project
 
-    git clone git@github.com:Polymer/vscode-plugin.git
+    git clone https://github.com/Polymer/vscode-plugin.git
     cd vscode-plugin/example_project
     bower install
     code ./
