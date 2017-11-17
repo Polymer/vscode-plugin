@@ -27,12 +27,12 @@ export function activate(context: ExtensionContext) {
       transport: TransportKind.stdio,
       options: debugOptions
     }
-  }
+  };
 
   // Options to control the language client
   let clientOptions: LanguageClientOptions = {
     // Register the server for the appropriate file types.
-    documentSelector: ['html', 'javascript'],
+    documentSelector: ['html', 'javascript', 'css'],
     synchronize: {
       // Synchronize the setting section 'polymer-ide' to the server
       configurationSection: 'polymer-ide',
