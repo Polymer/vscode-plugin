@@ -8,8 +8,8 @@
 
 import * as path from 'path';
 
-import {workspace, Disposable, ExtensionContext} from 'vscode';
-import {LanguageClient, LanguageClientOptions, SettingMonitor, ServerOptions, TransportKind} from 'vscode-languageclient';
+import {workspace, Disposable, ExtensionContext, commands, WorkspaceEdit, Uri, Range, Position} from 'vscode';
+import {LanguageClient, LanguageClientOptions, SettingMonitor, ServerOptions, TransportKind, WorkspaceEdit as WorkspaceEditRaw} from 'vscode-languageclient';
 
 export function activate(context: ExtensionContext) {
   // The server is pulled in from npm, and can be found in our node_modules dir.
@@ -46,7 +46,25 @@ export function activate(context: ExtensionContext) {
   let disposable = new LanguageClient(
                        'polymer-ide', serverOptions, clientOptions)
                        .start();
-
+  context.subscriptions.push(commands.registerCommand(
+    'polymer-ide/applyEdit', async (edit: WorkspaceEditRaw) => {
+      const realEdit = convertFromProtocol(edit);
+      const applied = await workspace.applyEdit(realEdit);
+    })
+  );
+  function convertFromProtocol(edit: WorkspaceEditRaw) {
+    const realEdit = new WorkspaceEdit();
+    const changes = edit.changes!;
+    for (const uri of Object.keys(changes)) {
+      for (const change of changes[uri]) {
+        const range = new Range(
+          new Position(change.range.start.line, change.range.start.character),
+          new Position(change.range.end.line, change.range.end.character));
+        realEdit.replace(Uri.parse(uri), range, change.newText);
+      }
+    }
+    return realEdit;
+  }
   // Push the disposable to the context's subscriptions so that the
   // client can be deactivated on extension deactivation
   context.subscriptions.push(disposable);
