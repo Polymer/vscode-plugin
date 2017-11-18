@@ -8,12 +8,14 @@
 
 import * as path from 'path';
 
-import {workspace, Disposable, ExtensionContext, commands, WorkspaceEdit, Uri, Range, Position} from 'vscode';
-import {LanguageClient, LanguageClientOptions, SettingMonitor, ServerOptions, TransportKind, WorkspaceEdit as WorkspaceEditRaw} from 'vscode-languageclient';
+import {workspace, Disposable, ExtensionContext, commands, WorkspaceEdit, TextEdit, Uri, Range, Position} from 'vscode';
+import {LanguageClient, LanguageClientOptions, SettingMonitor, ServerOptions, TransportKind, WorkspaceEdit as WorkspaceEditRaw, TextEdit as TextEditRaw, WillSaveTextDocumentWaitUntilRequest, Range as RangeRaw} from 'vscode-languageclient';
 
 export function activate(context: ExtensionContext) {
   // The server is pulled in from npm, and can be found in our node_modules dir.
-  let serverModule = context.asAbsolutePath(path.join('node_modules','polymer-editor-service', 'lib', 'polymer-language-server.js'));
+  let serverModule = context.asAbsolutePath(path.join(
+      'node_modules', 'polymer-editor-service', 'lib',
+      'polymer-language-server.js'));
   // The debug options for the server
   let debugOptions = {execArgv: ['--nolazy', '--debug=6004']};
 
@@ -43,30 +45,56 @@ export function activate(context: ExtensionContext) {
   };
 
   // Create the language client and start the client.
-  const languageClient = new LanguageClient(
-                       'polymer-ide', serverOptions, clientOptions);
+  const languageClient =
+      new LanguageClient('polymer-ide', serverOptions, clientOptions);
   const disposable = languageClient.start();
   context.subscriptions.push(disposable);
-  context.subscriptions.push(commands.registerCommand(
-    'polymer-ide/applyAllFixes', async () => {
-      const rawEdit: WorkspaceEditRaw = await languageClient.sendRequest(
-          'polymer-ide/getAllFixes', null);
-      const edit = convertFromProtocol(rawEdit);
-      const applied = await workspace.applyEdit(edit);
-    })
-  );
-  function convertFromProtocol(rawEdit: WorkspaceEditRaw) {
+  context.subscriptions.push(
+      commands.registerCommand('polymer-ide/applyAllFixes', async () => {
+        const rawEdit: WorkspaceEditRaw =
+            await languageClient.sendRequest('polymer-ide/getAllFixes', null);
+        const edit = convertWorkspaceEditFromProtocol(rawEdit);
+        const applied = await workspace.applyEdit(edit);
+      }));
+  // This is a workaround because it appears that vscode does not call the
+  // language server's onWillSaveTextDocument method, so we must do it
+  // ourselves.
+  // https://github.com/Microsoft/vscode-languageserver-node/issues/274
+  workspace.onWillSaveTextDocument((event) => {
+    if (!workspace.getConfiguration('polymer-ide').get('fixOnSave')) {
+      return;
+    }
+    event.waitUntil((async () => {
+      const rawTextEdits = (await languageClient.sendRequest(
+                               'polymer-ide/getAllFixesForFile',
+                               event.document.uri.toString())) as TextEditRaw[];
+      const edits = convertEditsFromProtocol(rawTextEdits);
+      return edits;
+    })());
+  });
+  function convertWorkspaceEditFromProtocol(rawEdit: WorkspaceEditRaw) {
     const edit = new WorkspaceEdit();
     const changes = rawEdit.changes!;
     for (const uri of Object.keys(changes)) {
       for (const change of changes[uri]) {
-        const range = new Range(
-          new Position(change.range.start.line, change.range.start.character),
-          new Position(change.range.end.line, change.range.end.character));
+        const range = convertRangeFromProtocol(change.range);
         edit.replace(Uri.parse(uri), range, change.newText);
       }
     }
     return edit;
+  }
+  function convertEditsFromProtocol(rawEdits: TextEditRaw[]): TextEdit[] {
+    const result = [];
+    for (const rawEdit of rawEdits) {
+      result.push(TextEdit.replace(
+          convertRangeFromProtocol(rawEdit.range), rawEdit.newText));
+    }
+    return result;
+  }
+  function convertRangeFromProtocol(range: RangeRaw): Range {
+    return new Range(
+        new Position(range.start.line, range.start.character),
+        new Position(range.end.line, range.end.character));
   }
 
   // Push the disposable to the context's subscriptions so that the
