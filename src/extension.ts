@@ -8,8 +8,8 @@
 
 import * as path from 'path';
 
-import {workspace, Disposable, ExtensionContext} from 'vscode';
-import {LanguageClient, LanguageClientOptions, SettingMonitor, ServerOptions, TransportKind} from 'vscode-languageclient';
+import {workspace, Disposable, ExtensionContext, commands, WorkspaceEdit, Uri, Range, Position} from 'vscode';
+import {LanguageClient, LanguageClientOptions, SettingMonitor, ServerOptions, TransportKind, WorkspaceEdit as WorkspaceEditRaw} from 'vscode-languageclient';
 
 export function activate(context: ExtensionContext) {
   // The server is pulled in from npm, and can be found in our node_modules dir.
@@ -27,12 +27,12 @@ export function activate(context: ExtensionContext) {
       transport: TransportKind.stdio,
       options: debugOptions
     }
-  }
+  };
 
   // Options to control the language client
   let clientOptions: LanguageClientOptions = {
     // Register the server for the appropriate file types.
-    documentSelector: ['html', 'javascript'],
+    documentSelector: ['html', 'javascript', 'css'],
     synchronize: {
       // Synchronize the setting section 'polymer-ide' to the server
       configurationSection: 'polymer-ide',
@@ -46,7 +46,6 @@ export function activate(context: ExtensionContext) {
   let disposable = new LanguageClient(
                        'polymer-ide', serverOptions, clientOptions)
                        .start();
-
   // Push the disposable to the context's subscriptions so that the
   // client can be deactivated on extension deactivation
   context.subscriptions.push(disposable);
