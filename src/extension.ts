@@ -46,25 +46,6 @@ export function activate(context: ExtensionContext) {
   let disposable = new LanguageClient(
                        'polymer-ide', serverOptions, clientOptions)
                        .start();
-  context.subscriptions.push(commands.registerCommand(
-    'polymer-ide/applyEdit', async (edit: WorkspaceEditRaw) => {
-      const realEdit = convertFromProtocol(edit);
-      const applied = await workspace.applyEdit(realEdit);
-    })
-  );
-  function convertFromProtocol(edit: WorkspaceEditRaw) {
-    const realEdit = new WorkspaceEdit();
-    const changes = edit.changes!;
-    for (const uri of Object.keys(changes)) {
-      for (const change of changes[uri]) {
-        const range = new Range(
-          new Position(change.range.start.line, change.range.start.character),
-          new Position(change.range.end.line, change.range.end.character));
-        realEdit.replace(Uri.parse(uri), range, change.newText);
-      }
-    }
-    return realEdit;
-  }
   // Push the disposable to the context's subscriptions so that the
   // client can be deactivated on extension deactivation
   context.subscriptions.push(disposable);
