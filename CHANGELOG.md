@@ -3,7 +3,11 @@
   Uncomment out the header as necessary.
 -->
 
-<!--## [Unreleased]-->
+## Unreleased
+- Support Code Actions for fixable warnings and warnings with edit actions.
+- Update to the latest version of the linter, with many new Polymer 2.0 and hybrid lint passes.
+![code actions](https://user-images.githubusercontent.com/1659/32974665-cc51d1e2-cbb4-11e7-9a20-9162323cdab8.gif =658x474)
+
 ## 0.6.0 - 2017-08-01
 
 * Updated to the latest version of the analyzer, includes many bug fixes and improvements, including:
