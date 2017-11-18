@@ -38,7 +38,11 @@
                 "fileMatch": "polymer.json",
                 "url": "./node_modules/polymer-project-config/lib/schema.json"
             }
-        ]
+        ],
+        "commands": [{
+            "command": "polymer-ide/applyAllFixes",
+            "title": "Fix all fixable Polymer warnings."
+        }]
     },
     "scripts": {
         "vscode:prepublish": "tsc -p ./",
