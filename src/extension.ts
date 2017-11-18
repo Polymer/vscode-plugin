@@ -49,13 +49,7 @@ export function activate(context: ExtensionContext) {
       new LanguageClient('polymer-ide', serverOptions, clientOptions);
   const disposable = languageClient.start();
   context.subscriptions.push(disposable);
-  context.subscriptions.push(
-      commands.registerCommand('polymer-ide/applyAllFixes', async () => {
-        const rawEdit: WorkspaceEditRaw =
-            await languageClient.sendRequest('polymer-ide/getAllFixes', null);
-        const edit = convertWorkspaceEditFromProtocol(rawEdit);
-        const applied = await workspace.applyEdit(edit);
-      }));
+
   // This is a workaround because it appears that vscode does not call the
   // language server's onWillSaveTextDocument method, so we must do it
   // ourselves.
