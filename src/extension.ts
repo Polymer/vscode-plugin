@@ -38,10 +38,9 @@ export function activate(context: ExtensionContext) {
     synchronize: {
       // Synchronize the setting section 'polymer-ide' to the server
       configurationSection: 'polymer-ide',
-      // Notify the server about file changes to '.clientrc files contain in the
-      // workspace
-      fileEvents: workspace.createFileSystemWatcher('**/.clientrc')
-    }
+      // Notify the server about changes to any files in the workspace
+      fileEvents: workspace.createFileSystemWatcher('**')
+    },
   };
 
   // Create the language client and start the client.
