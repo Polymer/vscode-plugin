@@ -8,12 +8,14 @@
 
 import * as path from 'path';
 
-import {workspace, Disposable, ExtensionContext} from 'vscode';
-import {LanguageClient, LanguageClientOptions, SettingMonitor, ServerOptions, TransportKind} from 'vscode-languageclient';
+import {workspace, Disposable, ExtensionContext, commands, WorkspaceEdit, TextEdit, Uri, Range, Position} from 'vscode';
+import {LanguageClient, LanguageClientOptions, SettingMonitor, ServerOptions, TransportKind, WorkspaceEdit as WorkspaceEditRaw, TextEdit as TextEditRaw, WillSaveTextDocumentWaitUntilRequest, Range as RangeRaw} from 'vscode-languageclient';
 
 export function activate(context: ExtensionContext) {
   // The server is pulled in from npm, and can be found in our node_modules dir.
-  let serverModule = context.asAbsolutePath(path.join('node_modules','polymer-editor-service', 'lib', 'polymer-language-server.js'));
+  let serverModule = context.asAbsolutePath(path.join(
+      'node_modules', 'polymer-editor-service', 'lib',
+      'polymer-language-server.js'));
   // The debug options for the server
   let debugOptions = {execArgv: ['--nolazy', '--debug=6004']};
 
@@ -27,25 +29,25 @@ export function activate(context: ExtensionContext) {
       transport: TransportKind.stdio,
       options: debugOptions
     }
-  }
+  };
 
   // Options to control the language client
   let clientOptions: LanguageClientOptions = {
     // Register the server for the appropriate file types.
-    documentSelector: ['html', 'javascript'],
+    documentSelector: ['html', 'javascript', 'css', 'json'],
     synchronize: {
       // Synchronize the setting section 'polymer-ide' to the server
       configurationSection: 'polymer-ide',
-      // Notify the server about file changes to '.clientrc files contain in the
-      // workspace
-      fileEvents: workspace.createFileSystemWatcher('**/.clientrc')
-    }
+      // Notify the server about changes to any files in the workspace
+      fileEvents: workspace.createFileSystemWatcher('**')
+    },
   };
 
   // Create the language client and start the client.
-  let disposable = new LanguageClient(
-                       'polymer-ide', serverOptions, clientOptions)
-                       .start();
+  const languageClient =
+      new LanguageClient('polymer-ide', serverOptions, clientOptions);
+  const disposable = languageClient.start();
+  context.subscriptions.push(disposable);
 
   // Push the disposable to the context's subscriptions so that the
   // client can be deactivated on extension deactivation

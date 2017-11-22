@@ -8,7 +8,7 @@
     "icon": "polymer.png",
     "publisher": "polymer",
     "engines": {
-        "vscode": "^1.10.0"
+        "vscode": "^1.15.0"
     },
     "categories": [],
     "repository": {
@@ -30,6 +30,11 @@
                     "type": "boolean",
                     "default": false,
                     "description": "When true, warnings will be reported for all files, not just those that are open. Warnings will be more accurate but the initial analysis will be slower."
+                },
+                "polymer-ide.fixOnSave": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "When true, all warnings that can be safely and automatically fixed will be fixed on save."
                 }
             }
         },
@@ -37,6 +42,12 @@
             {
                 "fileMatch": "polymer.json",
                 "url": "./node_modules/polymer-project-config/lib/schema.json"
+            }
+        ],
+        "commands": [
+            {
+                "command": "polymer-ide/applyAllFixes",
+                "title": "Fix all fixable Polymer warnings."
             }
         ]
     },
@@ -46,14 +57,14 @@
         "postinstall": "node ./node_modules/vscode/bin/install"
     },
     "devDependencies": {
-        "typescript": "^2.1.4",
-        "vscode": "^1.0.0",
+        "@types/mocha": "^2.2.32",
         "@types/node": "^6.0.40",
-        "@types/mocha": "^2.2.32"
+        "typescript": "^2.6.1",
+        "vscode": "^1.1.7"
     },
     "dependencies": {
         "polymer-editor-service": "^1.4.0",
         "polymer-project-config": "^3.0.0",
-        "vscode-languageclient": "^3"
+        "vscode-languageclient": "^3.5.0"
     }
 }

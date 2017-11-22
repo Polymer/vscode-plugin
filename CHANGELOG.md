@@ -3,7 +3,16 @@
   Uncomment out the header as necessary.
 -->
 
-<!--## [Unreleased]-->
+## Unreleased
+- Support Code Actions for fixable warnings and warnings with edit actions.
+- Update to the latest version of the linter, with many new Polymer 2.0 and hybrid lint passes.
+![code actions](https://user-images.githubusercontent.com/1659/32974665-cc51d1e2-cbb4-11e7-9a20-9162323cdab8.gif =658x474)
+
+- Added a setting `polymer-ide.fixOnSave` that, when true, causes all warnings in the current file to be fixed whenever that file is saved.
+<img src="https://user-images.githubusercontent.com/1659/32983803-946aabaa-cc4f-11e7-90ca-a63e8c437037.gif" width="821" height="588">
+
+- Added a command `Fix all fixable Polymer warnings` that fixes all fixable warnings in the workspace.
+
 ## 0.6.0 - 2017-08-01
 
 * Updated to the latest version of the analyzer, includes many bug fixes and improvements, including:
